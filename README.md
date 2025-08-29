@@ -1,4 +1,4 @@
-# DataClean
+# Data_Clean
 
 Raw data from system--bonus query--export
 
@@ -27,3 +27,41 @@ Concatenates the cleaned part (df_cleaned) with the untouched part (df_other) to
 
 6. Save the result
 Writes final_df to an Excel file on your Desktop: 07月清洗以后去重版.xlsx.
+
+
+# Data_Reorganize
+1. **Load input file**
+   * Reads `07月清洗以后去重版.xlsx` from the desktop into a pandas DataFrame (`df`).
+
+2. **Define the “monthly-package” amounts**
+   * `MONTHLY_AMOUNTS = {11000, 11500, 17000, 23000, 38000}`
+     These values flag a recharge as a *monthly package*.
+
+3. **Convert key columns to numeric**
+   * Ensures `充值金额`, `休眠时长`, and `增加/减少数量` are numeric; non-numeric values become 0.
+
+4. **Filter for the target business operation**
+   * Keeps only rows where `业务操作` equals **“休眠唤醒”**.
+
+5. **Create dormancy buckets**
+   * Maps `休眠时长` to five text ranges:
+     `1-30`, `31-90`, `91-180`, `181-360`, `>360`.
+
+6. **Flag monthly vs. non-monthly**
+   * New column `是否月包` is **True** if `充值金额` is in `MONTHLY_AMOUNTS`, otherwise **False**.
+
+7. **Aggregate totals**
+   * Groups by `员工编码`, `员工名称`, `休眠区间`, and `是否月包`;
+     computes **sum of 充值金额** and **sum of 增加/减少数量 (commission)**.
+
+8. **Sort results**
+   * Orders by employee and the logical sequence of the five dormancy buckets.
+
+9. **Split into two DataFrames**
+   * `df_monthly`  → rows where `是否月包` == True.
+   * `df_nonmonthly` → rows where `是否月包` == False.
+   * Drops the indicator column afterwards.
+
+10. **Export results**
+    * Writes `df_monthly` to `07月_休眠唤醒_月包汇总.xlsx`.
+    * Writes `df_nonmonthly` to `07月_休眠唤醒_非月包汇总.xlsx`.
